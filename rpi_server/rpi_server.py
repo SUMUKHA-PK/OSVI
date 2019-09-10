@@ -4,20 +4,51 @@ import os
 import sys
 import threading
 from http import server
+import relay
+import json
+
 
 class HTTPClientHandler(server.BaseHTTPRequestHandler) : 
-    
-    def do_POST(self) : 
+        
+    # Health check routine!
+    def do_GET(self) : 
+        self.send_response(200)
+
+        # Send headers
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+        # Send message back to client
+        message = "Health check okay!"
+        # Write content as utf-8 data
+        self.wfile.write(bytes(message, 'utf-8'))
+
+
+    def do_POST(self) :     
         self.send_response(200)
         
         # Send headers
         self.send_header('Content-type','text/html')
         self.end_headers()
  
-        # Send message back to client
+        """
+        Basic Idea: 
+
+        1. There are 5 buttons. So, PK can send 5 different json-encoded 
+            messages. 
+        
+        2. Decode each message. Call the correponding manish's API - This is 
+            blocking. Then send back the result to PK.
+
+        3. Let us see how this blocking mechanism works. Later, we can use an 
+            event loop and make it non-blocking.
+        """
+
         message = "Hello world!"
-        # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"))
+        for i in range(0, 5) : 
+            relay.relay(5, 1)
+
         return
 
 
