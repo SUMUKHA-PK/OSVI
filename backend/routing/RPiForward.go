@@ -1,3 +1,5 @@
+// A basic test of forwarding a request to the RPi
+
 package routing
 
 import (
@@ -13,11 +15,11 @@ func ForwardToRPi(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Test forward to RPi")
 
-	url := "http://10.100.82.95:12346/"
+	// URL := "http://10.100.82.95:12345/"
 
-	payload := strings.NewReader("{\"Url\": \"" + url + "\"}")
+	payload := strings.NewReader("{\"Url\": \"" + URL + "\"}")
 
-	req, err := http.NewRequest("POST", url, payload)
+	req, err := http.NewRequest("POST", URL, payload)
 	if err != nil {
 		log.Printf("Bad request in routing/RPiForward.go")
 		log.Println(err)
@@ -25,7 +27,6 @@ func ForwardToRPi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Header.Add("Prediction-Key", "5b6a7662b4b24116a58d16683e0606b0")
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
