@@ -9,11 +9,10 @@ import json
 import types
 
 
-
-class HTTPClientHandler(server.BaseHTTPRequestHandler) : 
+class HTTPClientHandler(server.BaseHTTPRequestHandler):
         
     # Health check routine!
-    def do_GET(self) : 
+    def do_GET(self):
         self.send_response(200)
 
         # Send headers
@@ -25,17 +24,15 @@ class HTTPClientHandler(server.BaseHTTPRequestHandler) :
         # Write content as utf-8 data
         self.wfile.write(bytes(message, 'utf-8'))
 
-
-    def do_POST(self) :     
+    def do_POST(self):
         
-        try: 
- 
+        try:
             """
             Basic Idea: 
 
             1. There are 5 buttons. So, PK sends a json message.
         
-            2. Decode each message. Call the correponding manish's API - This is 
+            2. Decode each message. Call the corresponding Manish's API - This is 
                 blocking. Then send back the result to PK.
 
             3. Let us see how this blocking mechanism works. Later, we can use an 
@@ -44,14 +41,13 @@ class HTTPClientHandler(server.BaseHTTPRequestHandler) :
         
             # Objects needed.
             trigger_req = types.trigger_request()
-
+            _ = trigger_req
 
             # Read the message body
-            status_msg = self.headers.get('Status-Message')
+            # status_msg = self.headers.get('Status-Message')
             content_len = int(self.headers.get('Content-Length'))
             msg = self.rfile.read(content_len)
             print(msg)
-
 
             # Decode the json-request.
             decoded_req = json.loads(msg)
@@ -63,11 +59,9 @@ class HTTPClientHandler(server.BaseHTTPRequestHandler) :
             print(trigger_req.trigger_type, trigger_req.machine)
             """
 
-
-
             # Craft the body
             self.send_response_only(200, "Successfully received a trigger request")
-            self.send_header('Content-type','application/json')
+            self.send_header('Content-type', 'application/json')
             self.end_headers()
 
             message = "Hello world!"
@@ -76,24 +70,24 @@ class HTTPClientHandler(server.BaseHTTPRequestHandler) :
             for i in range(0, 5) : 
                 relay.relay(5, 1)
             """
-        except: 
+
+        except SystemError:
             self.send_error(400, "Bad Request: " + str(sys.exc_info()[0]))
 
         return
 
 
-def main(server_ip_addr, server_port_no) : 
+def main(server_ip_addr, server_port_no):
     
     server_address = (server_ip_addr, server_port_no)
     try: 
         httpd = server.HTTPServer(server_address, HTTPClientHandler)
         print("Running HTTPServer at ", server_address)
         httpd.serve_forever()
-    
-    except: 
+
+    except SystemError:
         print("Unable to run server at ", server_address)
         sys.exit(-1)
-
 
 
 if __name__ == "__main__": 
