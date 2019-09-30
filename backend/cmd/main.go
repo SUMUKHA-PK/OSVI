@@ -11,10 +11,16 @@ import (
 func main() {
 
 	r := mux.NewRouter()
-
+	m := make(map[string]int)
 	r = routing.SetupRouting(r)
+	routing.ServerData = server.Data{
+		Router:        r,
+		Port:          "55555",
+		HTTPS:         false,
+		ConnectionMap: m,
+	}
 
-	err := server.Server(r, "55555", false)
+	err := server.Server(routing.ServerData)
 	if err != nil {
 		log.Fatalf("Could not start server : %v", err)
 	}

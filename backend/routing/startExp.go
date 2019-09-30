@@ -76,24 +76,26 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 	// Reject bad transactions
 	if res.StatusCode != 200 {
 		log.Printf("Bad request in routing/startExp.go. Wanted 200, received : %v", res.StatusCode)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// outD =
+		http.Error(w, "Bad request in routing/startExp.go. Wanted 200, received : "+string(res.StatusCode), http.StatusBadRequest)
 		return
 	}
 
 	log.Println(res.Status)
 	log.Println(res.StatusCode)
-	body, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Printf("Bad request in routing/RPiForward.go")
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// body, err = ioutil.ReadAll(res.Body)
+	// if err != nil {
+	// 	log.Printf("Bad request in routing/RPiForward.go")
+	// 	log.Println(err)
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+	log.Println(ServerData.ConnectionMap)
 
-	outD := &responses.TriggerResponse{200, "Successfully triggered experiment"}
+	outD := &responses.TriggerResponse{200, res.Status}
 	outJSON, err := json.Marshal(outD)
 	if err != nil {
-		log.Printf("Can't Marshall to JSON in routing/groceries.go/AddItemsToCart")
+		log.Printf("Can't Marshall to JSON in routing/startExp.go")
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

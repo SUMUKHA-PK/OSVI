@@ -47,7 +47,7 @@ func ForwardToRPi(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	fmt.Println(ServerData.ConnectionMap)
 	fmt.Println("Got data from server")
 	fmt.Println(string(body))
 }
