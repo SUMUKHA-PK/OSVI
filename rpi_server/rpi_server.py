@@ -6,6 +6,8 @@ import threading
 from http import server
 import relay
 import json
+import types
+
 
 
 class HTTPClientHandler(server.BaseHTTPRequestHandler) : 
@@ -25,29 +27,57 @@ class HTTPClientHandler(server.BaseHTTPRequestHandler) :
 
 
     def do_POST(self) :     
-        self.send_response(200)
         
-        # Send headers
-        self.send_header('Content-type','text/html')
-        self.end_headers()
+        try: 
  
-        """
-        Basic Idea: 
+            """
+            Basic Idea: 
 
-        1. There are 5 buttons. So, PK can send 5 different json-encoded 
-            messages. 
+            1. There are 5 buttons. So, PK sends a json message.
         
-        2. Decode each message. Call the correponding manish's API - This is 
-            blocking. Then send back the result to PK.
+            2. Decode each message. Call the correponding manish's API - This is 
+                blocking. Then send back the result to PK.
 
-        3. Let us see how this blocking mechanism works. Later, we can use an 
-            event loop and make it non-blocking.
-        """
+            3. Let us see how this blocking mechanism works. Later, we can use an 
+                event loop and make it non-blocking.
+            """
+        
+            # Objects needed.
+            trigger_req = types.trigger_request()
 
-        message = "Hello world!"
-        self.wfile.write(bytes(message, "utf8"))
-        for i in range(0, 5) : 
-            relay.relay(5, 1)
+
+            # Read the message body
+            status_msg = self.headers.get('Status-Message')
+            content_len = int(self.headers.get('Content-Length'))
+            msg = self.rfile.read(content_len)
+            print(msg)
+
+
+            # Decode the json-request.
+            decoded_req = json.loads(msg)
+            print(decoded_req)
+            """ 
+            trigger_req.trigger_type = decoded_req['TriggerType']
+            trigger_req.machine = decoded_req['Machine']
+            
+            print(trigger_req.trigger_type, trigger_req.machine)
+            """
+
+
+
+            # Craft the body
+            self.send_response_only(200, "Successfully received a trigger request")
+            self.send_header('Content-type','application/json')
+            self.end_headers()
+
+            message = "Hello world!"
+            self.wfile.write(bytes(message, "utf8"))
+            """
+            for i in range(0, 5) : 
+                relay.relay(5, 1)
+            """
+        except: 
+            self.send_error(400, "Bad Request: " + str(sys.exc_info()[0]))
 
         return
 
@@ -55,9 +85,15 @@ class HTTPClientHandler(server.BaseHTTPRequestHandler) :
 def main(server_ip_addr, server_port_no) : 
     
     server_address = (server_ip_addr, server_port_no)
-    httpd = server.HTTPServer(server_address, HTTPClientHandler)
-    print("Running HTTPServer at ", server_address)
-    httpd.serve_forever()
+    try: 
+        httpd = server.HTTPServer(server_address, HTTPClientHandler)
+        print("Running HTTPServer at ", server_address)
+        httpd.serve_forever()
+    
+    except: 
+        print("Unable to run server at ", server_address)
+        sys.exit(-1)
+
 
 
 if __name__ == "__main__": 
