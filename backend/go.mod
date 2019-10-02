@@ -3,7 +3,7 @@ module github.com/SUMUKHA-PK/OSVI/backend
 go 1.12
 
 require (
-	github.com/SUMUKHA-PK/Basic-Golang-Server v0.0.0-20190930095849-d1e9897d4118
+	github.com/SUMUKHA-PK/Basic-Golang-Server v0.0.0-20190930110520-8c51f0143d15
 	github.com/SUMUKHA-PK/GetService v0.0.0-20190617163507-d4b0655b336f
 	github.com/SUMUKHA-PK/Mail-Server v0.0.0-20190816164339-1124c969783e // indirect
 	github.com/gorilla/mux v1.7.3

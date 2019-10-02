@@ -20,5 +20,6 @@ func SetupRouting(r *mux.Router) *mux.Router {
 	r.HandleFunc("/", server.HealthCheckHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/sendRequestToRPi", ForwardToRPi).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/trigger", Trigger).Methods(http.MethodPost, http.MethodOptions)
+	r.HandleFunc("/experimentComplete", ExperimentComplete).Methods(http.MethodPost, http.MethodOptions)
 	return r
 }
