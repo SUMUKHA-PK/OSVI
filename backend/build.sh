@@ -1,1 +1,1 @@
-go build -o main ./cmd/... & ./main
+go build -o main ./cmd/... && ./main
