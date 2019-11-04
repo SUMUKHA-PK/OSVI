@@ -24,6 +24,7 @@ func ForwardToRPi(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Bad request in routing/RPiForward.go")
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		ServerData.Count--
 		return
 	}
 
@@ -34,6 +35,7 @@ func ForwardToRPi(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Bad request in routing/RPiForward.go")
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		ServerData.Count--
 		return
 	}
 
@@ -45,6 +47,7 @@ func ForwardToRPi(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Bad request in routing/RPiForward.go")
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		ServerData.Count--
 		return
 	}
 	fmt.Println(ServerData.ConnectionMap)

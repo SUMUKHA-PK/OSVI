@@ -20,14 +20,16 @@ import (
 func Trigger(w http.ResponseWriter, r *http.Request) {
 	log.Println("Relay request initiated.")
 
+	// enableCors(&w)
 	// Parse the incoming request
 	body, err := ioutil.ReadAll(r.Body)
+	fmt.Println(string(body))
 	if err != nil {
-		log.Printf("Bad request in routing/startExp.go : %v\n", err)
+		log.Printf("Bad request from client in routing/startExp.go : %v\n", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	fmt.Println(string(body))
 	var newReq TriggerRequest
 	err = json.Unmarshal(body, &newReq)
 	if err != nil {
@@ -81,8 +83,8 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 
 	// Reject bad transactions
 	if res.StatusCode != 200 {
-		log.Printf("Bad request in routing/startExp.go. Wanted 200, received : %v\n", res.StatusCode)
-		http.Error(w, "Bad request in routing/startExp.go. Wanted 200, received : "+string(res.StatusCode), http.StatusBadRequest)
+		log.Printf("Bad request from exp in routing/startExp.go. Wanted 200, received : %v\n", res.StatusCode)
+		http.Error(w, "Bad request from exp in routing/startExp.go. Wanted 200, received : "+string(res.StatusCode), http.StatusBadRequest)
 		return
 	}
 
@@ -107,4 +109,8 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(outJSON))
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
