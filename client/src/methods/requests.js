@@ -1,8 +1,8 @@
 import axios from "axios"
-import qs from "querystring"
 
 // Change here
-var url = 'http://localhost:3000';
+// var url = 'http://localhost:3000';
+var url = "http://10.100.81.223:55555"
 
 const httpGet = (path) => {
 	return axios.get(url + path, {
@@ -21,7 +21,8 @@ const httpDelete = (path) => {
 }
 
 const httpPost = (path, data) => {
-	return axios.post(url + path, qs.stringify(data), {
+	console.log(data)
+	return axios.post(url + path, data, {
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded'
 		}
