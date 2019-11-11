@@ -2,6 +2,7 @@ import axios from "axios"
 
 // Change here
 // var url = 'http://localhost:3000';
+// var url = "http://10.53.50.53:55555"
 var url = "http://10.100.81.223:55555"
 
 const httpGet = (path) => {
