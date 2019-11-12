@@ -5,12 +5,16 @@
 package routing
 
 import (
+	"strconv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/SUMUKHA-PK/OSVI/backend/responses"
 )
@@ -19,8 +23,9 @@ import (
 // the user of the website to the RT machine.
 func Trigger(w http.ResponseWriter, r *http.Request) {
 	log.Println("Relay request initiated.")
-
-	// enableCors(&w)
+	ServerData.ConnectionMap[r.RemoteAddr]++
+	ServerData.Count++
+	enableCors(&w)
 	// Parse the incoming request
 	body, err := ioutil.ReadAll(r.Body)
 	fmt.Println(string(body))
@@ -29,7 +34,6 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Println(string(body))
 	var newReq TriggerRequest
 	err = json.Unmarshal(body, &newReq)
 	if err != nil {
@@ -38,8 +42,33 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(ServerData.ConnectionMap)
-	fmt.Println(ServerData.Count)
+	// set a client time out of 30s per video
+	client := http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	resp, err := client.Get(newReq.CameraIP)
+	if err != nil {
+		log.Printf("Couldn't connect to camera in routing/startExp.go : %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	absPath, _ := os.UserHomeDir()
+	out, err := os.Create(absPath + "/OSVIVideos/" + strconv.FormatInt(time.Now().UnixNano(),10)+".mp4")
+	if err != nil {
+		log.Printf("Couldn't create file in routing/startExp.go : %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+
+	
 	// If there is a trigger(er) in the system, the new
 	// client must only be able to view and not trigger.
 	if ServerData.Count > 1 {
@@ -49,16 +78,13 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Forward the request to the remote RPi @ url
-	outData := &responses.TriggerRPiRequest{newReq.RequestType, ":55555"}
+	outData := &responses.TriggerRPiRequest{newReq.RequestType, r.RemoteAddr}
 	payload, err := json.Marshal(outData)
 	if err != nil {
 		log.Printf("Can't Marshall to JSON in routing/startExp.go : %v\n", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	log.Println("Sending " + string(payload))
-
 	// Crafting the request to send to the RPi
 	req, err := http.NewRequest("POST", URL, strings.NewReader(string(payload)))
 	if err != nil {
@@ -88,17 +114,6 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(res.Status)
-	log.Println(res.StatusCode)
-	// body, err = ioutil.ReadAll(res.Body)
-	// if err != nil {
-	// 	log.Printf("Bad request in routing/RPiForward.go")
-	// 	log.Println(err)
-	// 	http.Error(w, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
-	log.Println(ServerData.ConnectionMap)
-
 	outD := &responses.TriggerResponse{200, res.Status}
 	outJSON, err := json.Marshal(outD)
 	if err != nil {
@@ -114,3 +129,26 @@ func Trigger(w http.ResponseWriter, r *http.Request) {
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
+
+
+// TriggerGet does stuff
+func TriggerGet(w http.ResponseWriter, r *http.Request){
+
+	flags := 0
+	if ServerData.Count > 0{
+		flags = 0
+	}else{
+		flags = 1
+	}
+	fmt.Println("Active Users demanded")
+	enableCors(&w)
+	outD := &responses.ActiveRespose{200, "Request complete",flags}
+	outJSON, err := json.Marshal(outD)
+	if err != nil {
+		log.Printf("Can't Marshall to JSON in routing/activeUsers.go : %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(outJSON))
+}	
