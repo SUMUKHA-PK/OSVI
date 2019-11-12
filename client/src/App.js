@@ -4,6 +4,8 @@ import charpy from './images/charpy.jpg'
 import { httpPost, httpGet } from './methods/requests';
 import { error_server } from './errors';
 
+var CameraIp = "http://210.212.194.12:8888/feed1.webm"
+
 class View extends Component {
 	constructor() {
 		super()
@@ -14,7 +16,6 @@ class View extends Component {
 				liveStream: false,
 			},
 			viewers : 0,
-			queue : Infinity
 		}
 	}
 
@@ -35,23 +36,21 @@ class View extends Component {
 		setInterval(()=>{
 			httpGet("/getViewers")
 			.then( r => {
-				// r.data.viewers, r.data.queue
-				var access = false
-				if(r.data.NthViewer === 1){
-					access = true
-				}
-
 				cmp.setState({
 					viewers :  r.data.NumViewers,
-					access,
-					queue : r.data.NthViewer
-				})			
+				})
+				return httpGet("/getViews")
+			})
+			.then(r => {
+				console.log(r.data)
+				cmp.setState({
+					access : r.data.NthViewer + 1
+				})
 			})
 			.catch( e => {
 				alert(error_server)
 			})
-			console.log("duck")
-		}, 1000)
+		}, 100)
 
 	}
 
@@ -64,12 +63,11 @@ class View extends Component {
 	}
 
 	triggerClicked() {
-		httpPost("/trigger", { "RequestType": 'Start' })
+		httpPost("/trigger", { "RequestType": 'Start',  CameraIp})
 			.then(r => {
 				var infos = { ...this.state.infos }
 				infos.trigger = !infos.trigger
 				infos.liveStream = true
-
 				this.setState({
 					infos
 				})
@@ -81,14 +79,14 @@ class View extends Component {
 			return (
 				<video className="player w3-display-middle" type="text/html" width="100%" height="90%" autoPlay
 					title="IET"
-					src="http://210.212.194.12:8888/feed1.webm"
+					src= {CameraIp}
 					frameBorder="0">
 				</video>
 			)
 		else
 			return (
 				<span>
-					<span className="w3-text-white w3-bold w3-xxlarge">Charpy Experiment</span> <br />
+					<span className="w3-text-white w3-bold w3-xxlarge w3-hide-medium w3-hide-small">Charpy Experiment</span> <br />
 					<img src={charpy} alt="Charpy experiment" height="70%" />
 				</span>
 			)
