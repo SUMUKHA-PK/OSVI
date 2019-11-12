@@ -2,12 +2,12 @@
 All the request/response classes.
 """
 
-class trigger_request(Object): 
+class trigger_request(): 
     
     def __init__(self) :
     
-        trigger_type = str()
-        machine = str()
+        self.trigger_type = str()
+        self.machine = str()
         return
     
     
