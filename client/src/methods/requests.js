@@ -22,7 +22,6 @@ const httpDelete = (path) => {
 }
 
 const httpPost = (path, data) => {
-	console.log(data)
 	return axios.post(url + path, data, {
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded'

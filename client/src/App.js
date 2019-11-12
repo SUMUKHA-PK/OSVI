@@ -15,14 +15,24 @@ class View extends Component {
 				trigger: false,
 				liveStream: false,
 			},
-			viewers : 0,
+			viewers: 0,
 		}
 	}
 
 	componentDidMount() {
-		httpGet('/healthCheck')
+
+		window.addEventListener("beforeunload", (ev) => {
+			ev.preventDefault();
+			httpPost('/active', { data: -1 })
+				.then((r) => {
+
+				})
+			return ev.returnValue = 'Are you sure you want to close?';
+		});
+
+		httpPost('/active', { data: 1 })
 			.then(r => {
-				if (!r.data.alive) {
+				if (!r.data.Data) {
 					throw new Error(error_server)
 				}
 			})
@@ -30,26 +40,24 @@ class View extends Component {
 				alert(error_server)
 			})
 
-		
-			var cmp = this
+		var cmp = this
 
-		setInterval(()=>{
-			httpGet("/getViewers")
-			.then( r => {
-				cmp.setState({
-					viewers :  r.data.NumViewers,
+		setInterval(() => {
+			httpGet("/active")
+				.then(r => {
+					cmp.setState({
+						viewers : r.data.Data
+					})
+					return httpGet('/trigger')
 				})
-				return httpGet("/getViews")
-			})
-			.then(r => {
-				console.log(r.data)
-				cmp.setState({
-					access : r.data.NthViewer + 1
+				.then(r => {
+					cmp.setState({
+						access : Boolean(r.data.Data)
+					})
 				})
-			})
-			.catch( e => {
-				alert(error_server)
-			})
+				.catch(e => {
+					alert(error_server)
+				})
 		}, 100)
 
 	}
@@ -63,7 +71,7 @@ class View extends Component {
 	}
 
 	triggerClicked() {
-		httpPost("/trigger", { "RequestType": 'Start',  CameraIp})
+		httpPost("/trigger", { "RequestType": 'Start', CameraIp })
 			.then(r => {
 				var infos = { ...this.state.infos }
 				infos.trigger = !infos.trigger
@@ -79,7 +87,7 @@ class View extends Component {
 			return (
 				<video className="player w3-display-middle" type="text/html" width="100%" height="90%" autoPlay
 					title="IET"
-					src= {CameraIp}
+					src={CameraIp}
 					frameBorder="0">
 				</video>
 			)
