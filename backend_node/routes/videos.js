@@ -5,7 +5,7 @@ var http = require('http')
 var path = require('path')
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
+router.get('/record', function (req, res, next) {
 	http.get('http://210.212.194.12:8888/feed1.webm', (r) => {
 		
 		var file = fs.createWriteStream( path.join(__dirname, '../public/videos/') + Number(new Date()).toString() + '.mp4')
@@ -29,5 +29,11 @@ router.get('/', function (req, res, next) {
 		}, 30000)
 	})
 });
+
+router.get('/:id',(req,res,next)=>{
+    if(fs.existsSync(path.join(__dirname, '../public/videos',req.params.id))){
+        res.sendFile(path.join(__dirname, '../public/videos',req.params.id));
+    }
+})
 
 module.exports = router;
