@@ -5,9 +5,8 @@ var passportLocalMongoose = require('passport-local-mongoose');
 var Schema = mongoose.Schema;
 
 var Users = new Schema({
-	type : {
+	isTeacher : {
 		enum : ['S', 'T'],
-		default : 'S'
 	}
 },{
     timestamps: true
